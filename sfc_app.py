@@ -136,7 +136,7 @@ class sfc_app (app_manager.RyuApp):
 #        create unique index equipment_uind on vnf (name,iftype)
 
 #        ''')
-        conn.commit()
+#        conn.commit()
 #        cur.close()
 ########  END of database defenition
 
