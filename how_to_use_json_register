@@ -1,0 +1,2 @@
+./json_register.py --file=forwarder1.txt -a 10.0.0.2 -p 30012 -n registration
+./json_register.py --reg='{name='forwarder1', type_id=1, group_id=1, iftype=1, bidirectional=False, geo_location='server1.rack2.row3.room4'}' -a 10.0.0.2 -p 30012 -n registration 
