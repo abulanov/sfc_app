@@ -282,6 +282,9 @@ class sfc_app (app_manager.RyuApp):
             cur.execute('''select vnf_id from service where service_id = ? and  prev_vnf_id is NULL  ''',(service_id,))
             vnf_id = cur.fetchone()[0]
             cur.execute(''' select dpid, in_port, locator_addr from vnf where id=?''',(vnf_id,))
+            # Ex. bitwise iftype selection 'select * from vnf where  iftype & 2 != 0'
+            # & 1 - first bit; & 2 - second bit
+            #select dpid, in_port, locator_addr from vnf where id=7 and iftype & 2 != 0
             dpid, in_port, locator_addr = cur.fetchone()
             actions_entry_point.append(parser.OFPActionSetField(eth_dst=locator_addr))
             self.add_flow(dp_entry_point, 8, match_entry_point, actions_entry_point, goto_id=1)
