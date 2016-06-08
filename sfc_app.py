@@ -138,7 +138,7 @@ class sfc_app (app_manager.RyuApp):
 #        ''')
 #        conn.commit()
 #        cur.close()
-########  END of database defenition
+########  END of database definition
 
 ######### Register/Unregister DataPathes in datapth dictionary
     @set_ev_cls(ofp_event.EventOFPStateChange,
@@ -279,7 +279,7 @@ class sfc_app (app_manager.RyuApp):
                 self.del_flow(datapath=dp,match=match)
             
             # Iterrgoate DB on VNFS
-            cur.execute('''select vnf_id from service_defenition where service_id = ? and  prev_vnf_id is NULL  ''',(service_id,))
+            cur.execute('''select vnf_id from service where service_id = ? and  prev_vnf_id is NULL  ''',(service_id,))
             vnf_id = cur.fetchone()[0]
             cur.execute(''' select dpid, in_port, locator_addr from vnf where id=?''',(vnf_id,))
             dpid, in_port, locator_addr = cur.fetchone()
@@ -303,7 +303,7 @@ class sfc_app (app_manager.RyuApp):
                                                (ofproto.OXM_OF_IPV6_SRC,ipv6_src),
                                                (ofproto.OXM_OF_IPV6_DST,ipv6_dst)
                                                ])
-                cur.execute('''select next_vnf_id from service_defenition where service_id = ? and vnf_id = ?  ''',(service_id,vnf_id))
+                cur.execute('''select next_vnf_id from service where service_id = ? and vnf_id = ?  ''',(service_id,vnf_id))
                 next_vnf_id = cur.fetchone()[0]
                 if next_vnf_id:
                     cur.execute(''' select dpid, in_port, locator_addr from vnf where id=?''',(next_vnf_id,))
