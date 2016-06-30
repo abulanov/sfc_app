@@ -1,1 +1,1 @@
-{name=forwarder1, type_id=1, group_id=1, iftype=2, bidirectional=False, geo_location=server1.rack2.row3.room4}
+{name=forwarder1, vnf_id=1, type_id=1, group_id=1, iftype=2, bidirectional=False, geo_location=server1.rack2.row3.room4}

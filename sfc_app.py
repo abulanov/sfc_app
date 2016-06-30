@@ -121,7 +121,7 @@ class sfc_app (app_manager.RyuApp):
 #        DROP TABLE IF EXISTS vnf; 
 
 #        CREATE TABLE vnf (
-#            id  INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+#            id  INTEGER NOT NULL,
 #            name    TEXT,
 #            type_id  INTEGER,
 #            group_id    INTEGER,
@@ -131,7 +131,7 @@ class sfc_app (app_manager.RyuApp):
 #            dpid    INTEGER,
 #            in_port INTEGER,
 #            locator_addr  NUMERIC
-
+#            PRIMARY KEY(id,iftype)
 #        );
 #        create unique index equipment_uind on vnf (name,iftype)
 
@@ -345,6 +345,7 @@ class sfc_app (app_manager.RyuApp):
                 reg_string=pkt.protocols[-1]
                 reg_info = json.loads(reg_string)
                 name=reg_info['register']['name']
+                id=reg_info['register']['vnf_id']
                 type_id=reg_info['register']['type_id']
                 group_id=reg_info['register']['group_id']
                 geo_location=reg_info['register']['geo_location']
@@ -353,10 +354,10 @@ class sfc_app (app_manager.RyuApp):
                 dpid=datapath.id
                 locator_addr=pkt_eth.src
 
-                cur.execute('''INSERT OR IGNORE INTO vnf (name, type_id,
+                cur.execute('''INSERT OR IGNORE INTO vnf (id, name, type_id,
                         group_id, geo_location, iftype, bidirectional,
                         dpid, in_port, locator_addr  ) VALUES ( ?, ?, ?,
-                        ?, ?, ?, ?, ?, ? )''', ( name, type_id,
+                        ?, ?, ?, ?, ?, ?, ? )''', ( id, name, type_id,
                             group_id, geo_location, iftype,
                             bidirectional, dpid, in_port, locator_addr )
                         )

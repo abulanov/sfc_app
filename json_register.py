@@ -15,7 +15,7 @@ def main():
 
     # Options
     op.add_option( '--reg', action="store", \
-                     dest="register", help = "service registration information. Example: --reg='{ name=\'Yo-forwarder\', type_id=1, group_id=1, geo_location=\'server1.rack5.row17.room2\', iftype=1, bidirectional=False }'" )
+                     dest="register", help = "service registration information. Example: --reg='{ vnf_id=999, name=\'Yo-forwarder\', type_id=1, group_id=1, geo_location=\'server1.rack5.row17.room2\', iftype=1, bidirectional=False }'" )
 
     op.add_option( '--file', action="store",  \
                      dest="file", help = 'File containing the service registration information. It should follow the format of the registration as above i.e., starts with {..' )
@@ -69,6 +69,7 @@ def main():
     if register_str:
         # Parse register
         register_dict = dict(
+            vnf_id = None,
             name=None,
             type_id=None,
             group_id=None,
@@ -113,10 +114,14 @@ def parse_register_str(register_dict, register_str):
     if m:
         register_dict['name'] = m.group(1)
 
+    m = re.search("vnf_id=(\d+)\s*",register_str)
+    if m:
+        register_dict['vnf_id'] = m.group(1)
+
+
     m = re.search("type_id=(\d+)\s*",register_str)
     if m:
         register_dict['type_id'] = m.group(1)
-
 
     m = re.search("group_id=(\d+)\s*",register_str)
     if m:
