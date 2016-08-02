@@ -344,6 +344,10 @@ class sfc_app (app_manager.RyuApp):
         pkt_udp = pkt.get_protocol(udp.udp)
         if pkt_udp:
             if pkt_udp.dst_port == 30012:
+                ######
+                #Deebug
+                ######
+                print "Packet_IN 30012 has arrived"
                 reg_string=pkt.protocols[-1]
                 reg_info = json.loads(reg_string)
                 name=reg_info['register']['name']

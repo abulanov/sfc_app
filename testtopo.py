@@ -1,5 +1,5 @@
 from mininet.topo import Topo
-
+from mininet.link import Link
 class MyTopo( Topo ):
     "Simple topology example."
 
@@ -34,6 +34,9 @@ class MyTopo( Topo ):
         self.addLink(sw2,sw3)
         self.addLink(sw3,sw4)
         self.addLink(sw4,sw5)
-
+#        Link(host2, sw3,  intfName1='h2-eth1')
+#        host2.cmd('ip addr add 10.0.0.12/8 dev h2-eth1')
+        print (host2) 
+#        host2.cmd('ip route add 10.0.0.5/32 dev h2-eth1')
 
 topos = { 'mytopo': ( lambda: MyTopo() ) }
