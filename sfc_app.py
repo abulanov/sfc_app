@@ -281,12 +281,17 @@ class sfc_app (app_manager.RyuApp):
             # Iterrgoate DB on VNFS
             cur.execute('''select vnf_id from service where service_id = ? and  prev_vnf_id is NULL  ''',(service_id,))
             vnf_id = cur.fetchone()[0]
-            ### added iftype bitwise support: 1(01)-in, 2(10)-out, 3(11)-inout
-            cur.execute(''' select dpid, in_port, locator_addr from vnf where id=? and iftype & 1 != 0''',(vnf_id,))
+            ### added iftype bitwise support: 1(01)-out, 2(10)-in, 3(11)-inout
+            cur.execute(''' select locator_addr from vnf where id=? and iftype & 2 != 0''',(vnf_id,))
             # Ex. bitwise iftype selection 'select * from vnf where  iftype & 2 != 0'
             # & 1 - first bit; & 2 - second bit
             #select dpid, in_port, locator_addr from vnf where id=7 and iftype & 2 != 0
-            dpid, in_port, locator_addr = cur.fetchone()
+            locator_addr = cur.fetchone()[0]
+
+            cur.execute(''' select dpid, in_port from vnf where id=? and iftype & 1 != 0''',(vnf_id,))
+
+            dpid, in_port = cur.fetchone()
+
             actions_entry_point.append(parser.OFPActionSetField(eth_dst=locator_addr))
             self.add_flow(dp_entry_point, 8, match_entry_point, actions_entry_point, goto_id=1)
             while True:
@@ -311,8 +316,11 @@ class sfc_app (app_manager.RyuApp):
                 next_vnf_id = cur.fetchone()[0]
                 if next_vnf_id:
                     ### added iftype support
-                    cur.execute(''' select dpid, in_port, locator_addr from vnf where id=? and iftype & 1 != 0''',(next_vnf_id,))
-                    dpid, in_port, locator_addr = cur.fetchone()
+                    cur.execute(''' select locator_addr from vnf where id=? and iftype & 2 != 0''',(next_vnf_id,))
+                    locator_addr = cur.fetchone()[0]
+                    cur.execute(''' select dpid, in_port from vnf where id=? and iftype & 1 != 0''',(next_vnf_id,))
+                    dpid, in_port = cur.fetchone()
+
                     actions.append(parser.OFPActionSetField(eth_dst=locator_addr))
                     self.add_flow(datapath, 8, match,  actions,goto_id=1)
                     vnf_id = next_vnf_id
@@ -321,8 +329,13 @@ class sfc_app (app_manager.RyuApp):
                     self.add_flow(datapath, 8, match, actions,goto_id=1)
                     break
                 ### added iftype support
-                cur.execute(''' select dpid, in_port, locator_addr from vnf where id=? and iftype & 1 != 0''',(vnf_id,))
-                dpid, in_port, locator_addr = cur.fetchone()
+               # cur.execute(''' select dpid, in_port, locator_addr from vnf where id=? and iftype & 1 != 0''',(vnf_id,))
+               # dpid, in_port, locator_addr = cur.fetchone()
+
+                cur.execute(''' select locator_addr from vnf where id=? and iftype & 2 != 0''',(next_vnf_id,))
+                locator_addr = cur.fetchone()[0]
+                cur.execute(''' select dpid, in_port from vnf where id=? and iftype & 1 != 0''',(next_vnf_id,))
+                dpid, in_port = cur.fetchone()
 
         except KeyError:
             flow_match = None
