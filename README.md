@@ -36,6 +36,7 @@ In the setup we have SDN network controlled by SDN controller on top of which a 
 ![]( https://lh3.googleusercontent.com/6rztbbP7wcWmmit3IhDZAVaxvhxSpn_VbyaX1-5rAJGYCjIQRQ3_U5ICc9Ntunkktv2sCkmvezYTGlU=w1922-h920-rw )
 
 The process goes like this:  
+
 1. SF discovery: VNF self-registration. Rightmost (see pic.) DB table  is populated with VNF characteristics. 
 2. OSS/BSS populates DB tables describing service and Flow to service binding, where flow specification is included.
 3. OSS/BSS requests to start SFC for a flow. Flow is referenced by ID.
@@ -43,14 +44,15 @@ The process goes like this:
 5. ... and installs the catching rule on the network. It is assumed that the ingress point of the flow is not known. 
 6. As soon the traffic of interest appears in SFC-enabled domain, the event reported to SFC application. At this moment the ingress point is revealed.
 7. Catching rule is removed and steering rule is installed along the path of service chain.
-8. Traffic is steered 
+8. Traffic is steered. 
 
 
 The application can be improved by adding support of the following functionalities:
-1. Interface type support. Currently all the interfaces are treated as inout type. Refining the requests to the Service Catalog Data Base will allow to implement multi-homed service function with defined flow direction (ex. Firewall with inside and outside interfaces) *[DONE]*
+
+1. Interface type support. Currently all the interfaces are treated as inout type. Refining the requests to the Service Catalog Data Base will allow to implement multi-homed service function with defined flow direction (ex. Firewall with inside and outside interfaces). **[DONE]**
 2. Symmetric flow support can be a convenient feature to add reverse forwarding graph through symmetric service functions automagically. Symmetric or bidirectional functions are those which require traffic to be passed in both directions: uplink and downlink so that service could be provided (example: NAT). Not having that feature is not critical, but requires explicit definition of the reverse forwarding graph.
 3. Group support is required when several instances of a service function are deployed. The absence of it can be worked around by using Load Balancers in front of actual Network Functions. 
-4. Etc.: Richer set of protocol fields,  wildcard logic, VNF statuses and other enhancements
+6. Etc.: Richer set of protocol fields,  wildcard logic, VNF statuses and other enhancements.
 
 ### Demonstration Environment
 ... to be added
