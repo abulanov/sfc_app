@@ -20,11 +20,11 @@ Controller application reads from the Service Catalogue a description of a servi
 
 VNF self-registration is a service function discovery mechanism. 
 
-![]( https://drive.google.com/open?id=0BxaIgk5wtvtadG5qeUx1eVo2TjA )
+![]( https://lh4.googleusercontent.com/WKfVjFYaiaRi1WRUghvPFyNtV5jWvZk4jofEvB-1S0XL0ePCPl9CfMq1tc9R89m-1J3zICcSjEwEg8o=w1922-h920 )
 
 A cattle approach implies a service being instantiated from a resource pool embracing computing, storage, network resources. Virtual infrastructure manager,  is responsible for scheduling and spinning up a virtual machine. In this case the location of a service (we will call it service function) is known with the granularity of the resource pool location, which is not enough for the purpose of Forwarding Graph building. To address this challenge we present self-registration functionality which allows a service announce its presence in the network. An assistant process on the VM emits registration message to the network on behalf of the service. This message contains the descriptive information on what kind of service it is, what the role the emitting interface plays (in, out, in-out), whether the service is bidirectional or asymmetric and so forth. The service itself, nevertheless, doesn’t have all the necessary information.  This is where an Open Flow capable switch steps in.
 
-![]( https://drive.google.com/open?id=0BxaIgk5wtvtaOG56eE5ScXRwZjA )
+![]( https://lh6.googleusercontent.com/ncAQBNclksWgZSX2I_GO7tnAp4a9pdWX9xp8FaLoplvHlTYy2zr--GPtx_1G4Ck8ks2cWVw_jhKUqU0=w1922-h920-rw )
 
 It wraps the registration packet into a packet_in OpenFlow  message and sends it to the SDN controller. Packet_in message includes network specific information, such as service address locator, which is its mac address, datapath identificator which is a unique switch id, and a port id , through which the  registration message has been received. The controlling application parses packet_in message, retrieves the information from it, decapsulates the registration message, decodes it as well, and passes all the retrieved information to the database.  
 
@@ -33,7 +33,7 @@ It wraps the registration packet into a packet_in OpenFlow  message and sends it
 
 In the setup we have SDN network controlled by SDN controller on top of which a SFC application is running. The application exposes REST API to accept directives from OSS/BSS system. The application is integrated with the database, where information on registered service functions, services and flows is stored. This database represents a Service Catalog. There is no any OSS/BSS system, (so I’m going to play a role of OSS/BSS system), service definitions and flow to service bindings prepared manually as well as sending request to the REST APIs of the application.
 
-![]( https://drive.google.com/open?id=0BxaIgk5wtvtaMTYybXBJN29OeVE )
+![]( https://lh3.googleusercontent.com/6rztbbP7wcWmmit3IhDZAVaxvhxSpn_VbyaX1-5rAJGYCjIQRQ3_U5ICc9Ntunkktv2sCkmvezYTGlU=w1922-h920-rw )
 
 The process goes like this:  
 1.	SF discovery: VNF self-registration. Rightmost (see pic.) DB table  is populated with VNF characteristics. 
