@@ -55,4 +55,38 @@ The application can be improved by adding support of the following functionaliti
 6. Etc.: Richer set of protocol fields,  wildcard logic, VNF statuses and other enhancements.
 
 ### Demonstration Environment
+
 ... to be added
+
+### Demonstration Instructions
+
+The demonstration includes prepopulated flow table in the database, which, of course, can be modified. Flow 3 is used here which specification  describes a flow from h1 (10.0.0.1) to h5 (10.0.0.5)
+Script example.py does all the magic of running mininet, interconnecting hosts and running self-registartation on them.
+
+1. Open four terminals
+2. Start Ryu application in the 1st terminal:
+   * 1st terminal: ``` /home/ubuntu/ryu/bin/ryu-manager --verbose ./sfc_app.py```
+3. Start test topology in the 2nd terminal:
+   * 2nd terminal: ```sudo ./example.py```
+4. Clear flow 3 (the application preinstalls one when get started):
+   * 3rd terminal: ``` curl -v http://127.0.0.1:8080/delete_flow/3```
+5. Check OpenFlow rules before SFC applied:
+   * 2nd terminal: ```mininet> h1 tracepath h5```
+   * 4th terminal: ```sudo ovs-ofctl -O OpenFlow13 dump-flows s3 | grep 10.0.0.5```
+   * One hop can be seen, no rules are insatlled
+6. Apply Service Function Chain and check catching rules being installed on OF switches:
+   * 3rd terminal: ```curl -v http://127.0.0.1:8080/add_flow/3```
+   * 4th terminal: ```sudo ovs-ofctl -O OpenFlow13 dump-flows s3 | grep 10.0.0.5```
+   * After flow application a catching rule is seen on OF switch.
+7. Start traffic running, check steering rules:
+   * 2nd terminal: ```mininet> h1 tracepath h5```
+   * 4th terminal: ```sudo ovs-ofctl -O OpenFlow13 dump-flows s3 | grep 10.0.0.5```
+   * Now traffic passes several hops, a catching rule has been replaced with a steering rule.
+8. Delete flows
+   * 3rd terminal: ```curl -v http://127.0.0.1:8080/delete_flow/3```
+   * 2nd terminal: ```mininet> h1 tracepath h5```
+   * 4th terminal: ``` sudo ovs-ofctl -O OpenFlow13 dump-flows s3 | grep 10.0.0.5```
+   * Data flow passes one hop again, no related rules seen on OF switch
+   
+
+
