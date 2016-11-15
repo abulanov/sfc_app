@@ -56,6 +56,20 @@ The application can be improved by adding support of the following functionaliti
 3. Group support is required when several instances of a service function are deployed. The absence of it can be worked around by using Load Balancers in front of actual Network Functions. 
 6. Etc.: Richer set of protocol fields,  wildcard logic, VNF statuses and other enhancements.
 
+### Installation
+
+My environment is based on Ubuntu 14.04. I suppose other Linuxes are OK too, though I didn’t tried them.
+The following software should be installed. Detailed installation instructions for each of the component can be found on the related web pages. 
+#####Ryu controller
+ [https://github.com/osrg/ryu](https://github.com/osrg/ryu)
+#####Mininet
+ [http://mininet.org/download/](http://mininet.org/download/)
+#####SQLite Browser
+In fact, as long as there is any sqlite client,  this one is not required, but I found the tool very convenient for checking and editing sqlite database. The database is used in the project as a Service Directory.
+
+ [http://sqlitebrowser.org/](http://sqlitebrowser.org/)
+
+
 ### Demonstration Environment
 
 ... to be added
