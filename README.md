@@ -72,7 +72,12 @@ In fact, as long as there is any sqlite client,  this one is not required, but I
 
 ### Demonstration Environment
 
-... to be added
+My demonstration environment is based on mininet, a network emulator which creates a network of virtual hosts, switches, controllers, and links. The switches used in the demonstration are OpenvSwitches.  For the sake of simplicity, the demonstration environment consists of five linearly connected switches; five hosts, each linked to one switch, except h2 and h3 which have additional links to switches s3 and s4 respectively, and a Ryu controller running OpenFlow1.3.
+example.py script sets up environment (see Demonstration Instructions). In the invironment hosts h2 and h3 are VNFs with two interface. Those interfaces are of type "in" or "out" each. Type "inout" is supproted as well. 
+
+![demonstration environment](https://cloud.githubusercontent.com/assets/19608626/20305085/c170bc8e-ab44-11e6-84d9-d6a4e8562093.jpg)
+
+The traffic comes from h1 to h5 and passes through h2 and h3 according to a service description when flow rules are imposed to the network.
 
 ### Demonstration Instructions
 
