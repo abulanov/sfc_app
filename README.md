@@ -94,7 +94,7 @@ Script example.py does all the magic of running mininet, interconnecting hosts a
 
 1. Open four terminals
 2. Start Ryu application in the 1st terminal:
-   * 1st terminal: ``` /home/ubuntu/ryu/bin/ryu-manager --verbose ./sfc_app.py```
+   * 1st terminal: ```ryu-manager --verbose ./sfc_app.py```
 3. Start test topology in the 2nd terminal:
    * 2nd terminal: ```sudo ./example.py```
 4. Clear flow 3 (the application preinstalls one when get started):
