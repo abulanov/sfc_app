@@ -1,19 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python2
  
 """
 """
 from mininet.net import Mininet
 from mininet.node import Controller, RemoteController, OVSKernelSwitch,UserSwitch
-#OVSLegacyKernelSwitch, UserSwitch
 from mininet.cli import CLI
 from mininet.log import setLogLevel
 from mininet.link import Link, TCLink
  
 def topology():
-    "Create a network."
+    """Create a network"""
     net = Mininet( controller=RemoteController, link=TCLink, switch=OVSKernelSwitch )
  
-    print "*** Creating nodes"
+    print("*** Creating nodes")
     h1 = net.addHost( 'h1', mac='00:00:00:00:00:01', ip='10.0.0.1/24' )
     h2 = net.addHost( 'h2', mac='00:00:00:00:00:02', ip='10.0.0.2/24' )
     h3 = net.addHost( 'h3', mac='00:00:00:00:00:03', ip='10.0.0.3/24' )
@@ -26,28 +25,24 @@ def topology():
     s5 = net.addSwitch( 's5', listenPort=6675 )
     c7 = net.addController( 'c7', controller=RemoteController, ip='127.0.0.1', port=6633 )
  
-    print "*** Creating links"
+    print("*** Creating links")
     
     net.addLink(s1, h1)
     net.addLink(s2, h2)
     net.addLink(s3, h3)
     net.addLink(s4, h4)
     net.addLink(s5, h5)
-
     net.addLink(s1, s2)
     net.addLink(s2, s3)
     net.addLink(s3, s4)
     net.addLink(s4, s5)
-    
     net.addLink(s3, h2)
-#    Link(h2, s3, intfName1='h2-eth1')
     net.addLink(s4, h3)
-#    Link(h3, s4, intfName1='h3-eth1')
     h2.cmd('ifconfig h2-eth1 10.0.0.12 netmask 255.255.255.0')
-#    h2.cmd('ip route add 10.0.0.1/32 dev h2-eth0')
-#    h2.cmd('ip route add 10.0.0.5/32 dev h2-eth1')
     h3.cmd('ifconfig h3-eth1 10.0.0.13 netmask 255.255.255.0')
-    print "*** Starting network"
+
+    print ("*** Starting network")
+
     net.build()
     h2.cmd('ip route add 10.0.0.1/32 dev h2-eth0; ip route add 10.0.0.5/32 dev h2-eth1')
     h2.cmd('ip route add 10.0.0.253/32 dev h2-eth0; ip route add 10.0.0.254/32 dev h2-eth1')
@@ -65,20 +60,18 @@ def topology():
     s3.start( [c7] )
     s4.start( [c7] )
     s5.start( [c7] )
-
 #    net.start()
-    #h2_out=h2.cmd("./json_register.py --reg='{name='forwarder1', vnf_id=555, type_id=1, group_id=1, iftype=1, bidirectional=False, geo_location='server1.rack2.row3.room4'}' -a 10.0.0.253 -p 30012 -n registration")
-    #h2.cmd("./json_register.py --reg='{name='forwarder1', vnf_id=555, type_id=1, group_id=1, iftype=1, bidirectional=False, geo_location='server1.rack2.row3.room4'}' -a 10.0.0.254 -p 30012 -n registration")
+#    h2_out=h2.cmd("./json_register.py --reg='{name='forwarder1', vnf_id=555, type_id=1, group_id=1, iftype=1, bidirectional=False, geo_location='server1.rack2.row3.room4'}' -a 10.0.0.253 -p 30012 -n registration")
+#    h2.cmd("./json_register.py --reg='{name='forwarder1', vnf_id=555, type_id=1, group_id=1, iftype=1, bidirectional=False, geo_location='server1.rack2.row3.room4'}' -a 10.0.0.254 -p 30012 -n registration")
+
     h2.cmd('./json_register.py --file=forwarder1.txt -a 10.0.0.253 -p 30012 -n registration')
     h2.cmd('./json_register.py --file=forwarder1-2.txt -a 10.0.0.254 -p 30012 -n registration')
-    #print "H2 OUTPUT:", h2_out
-    
     h3.cmd('./json_register.py --file=forwarder2-1.txt -a 10.0.0.253 -p 30012 -n registration')
     h3.cmd('./json_register.py --file=forwarder2-2.txt -a 10.0.0.254 -p 30012 -n registration')
-    print "*** Running CLI"
+    print("*** Running CLI")
     CLI( net )
  
-    print "*** Stopping network"
+    print("*** Stopping network")
     net.stop()
  
 if __name__ == '__main__':

@@ -360,7 +360,7 @@ class sfc_app (app_manager.RyuApp):
                 ######
                 #Deebug
                 ######
-                print "Packet_IN 30012 has arrived"
+                print ("Packet_IN 30012 has arrived")
                 reg_string=pkt.protocols[-1]
                 reg_info = json.loads(reg_string)
                 name=reg_info['register']['name']
