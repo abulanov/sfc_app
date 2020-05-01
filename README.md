@@ -58,7 +58,7 @@ The application can be improved by adding support for the following functionalit
 
 ### Installation
 
-My environment is based on Ubuntu 14.04. I suppose other Linuxes are OK too, though I didn’t try them.
+Initially, the environment was based on Ubuntu 14.04. Recently it has been tried out on the latest Ubuntu 20.04 LTS. I suppose other Linuxes are OK too, though I didn’t try them.
 The following software should be installed. Detailed installation instructions for each of the component can be found on the related web pages. 
 ##### Ryu controller
  [https://github.com/osrg/ryu](https://github.com/osrg/ryu) 
@@ -78,6 +78,14 @@ example.py script sets up the environment (see Demonstration Instructions). In t
 ![demonstration environment](https://cloud.githubusercontent.com/assets/19608626/20305085/c170bc8e-ab44-11e6-84d9-d6a4e8562093.jpg)
 
 The traffic comes from h1 to h5 and passes through h2 and h3 according to a service description when flow rules are imposed on the network.
+To run the demonstration smoothly, make sure that IP forwarding is enabled on OS (**sudo sysctl net.ipv4.ip_forward=1**) and following lines added to /etc/hosts:
+```
+10.0.0.1 h1
+10.0.0.2 h2
+10.0.0.3 h3
+10.0.0.4 h4
+10.0.0.5 h5
+```
 
 ### Demonstration Instructions
 
@@ -86,7 +94,7 @@ Script example.py does all the magic of running mininet, interconnecting hosts a
 
 1. Open four terminals
 2. Start Ryu application in the 1st terminal:
-   * 1st terminal: ``` /home/ubuntu/ryu/bin/ryu-manager --verbose ./sfc_app.py```
+   * 1st terminal: ```ryu-manager --verbose ./sfc_app.py```
 3. Start test topology in the 2nd terminal:
    * 2nd terminal: ```sudo ./example.py```
 4. Clear flow 3 (the application preinstalls one when get started):
