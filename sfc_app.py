@@ -1,7 +1,7 @@
         
 import sqlite3
 import json
-import copy
+from copy import copy
 from ryu.app.wsgi import ControllerBase, WSGIApplication, route
 from webob import Response
 from ryu.base import app_manager
@@ -98,8 +98,8 @@ class SFCController(ControllerBase):
                                                (dp.ofproto.OXM_OF_IPV6_DST,ipv6_dst)
                                                ])
 
-            match = copy.copy(match_del)
-            sfc_app.del_flow(datapath=dp,match=match)
+#            match = copy.copy(match_del)
+            sfc_app.del_flow(datapath=dp,match=match_del)
         return Response(status = 200)  
 
 class sfc_app (app_manager.RyuApp):
@@ -194,16 +194,15 @@ class sfc_app (app_manager.RyuApp):
             flow_spec = cur.fetchone()
         
 ############### Default actions to tables 0, 1, 2
-        actions = []
         match = parser.OFPMatch()
+
+        actions = []
         self.add_flow(datapath, 0, match, actions,goto_id=1)
         
-        match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_NORMAL,
            ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions,table_id=1)
 
-        match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
            ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions,table_id=2)
@@ -240,23 +239,6 @@ class sfc_app (app_manager.RyuApp):
             (flow_id,name,in_port,eth_dst,eth_src,eth_type,ip_proto,ipv4_src,ipv4_dst,tcp_src,tcp_dst,udp_src,udp_dst,ipv6_src,ipv6_dst,service_id)=flow_spec
             if not eth_type: eth_type = 0x0800  
             actions_entry_point = []  
-            match_entry_point = self.create_match(parser, [
-                                               (ofproto.OXM_OF_IN_PORT,in_port_entry),
-                                               (ofproto.OXM_OF_ETH_SRC,eth_src),
-                                               (ofproto.OXM_OF_ETH_DST,eth_dst),
-                                               (ofproto.OXM_OF_ETH_TYPE,eth_type),
-                                               (ofproto.OXM_OF_IPV4_SRC,self.ipv4_to_int(ipv4_src)),
-                                               (ofproto.OXM_OF_IPV4_DST,self.ipv4_to_int(ipv4_dst)),
-                                               (ofproto.OXM_OF_IP_PROTO,ip_proto),
-                                               (ofproto.OXM_OF_TCP_SRC,tcp_src),
-                                               (ofproto.OXM_OF_TCP_DST,tcp_dst),
-                                               (ofproto.OXM_OF_UDP_SRC,udp_src),
-                                               (ofproto.OXM_OF_UDP_DST,udp_dst),
-                                               (ofproto.OXM_OF_IPV6_SRC,ipv6_src),
-                                               (ofproto.OXM_OF_IPV6_DST,ipv6_dst)
-                                               ])
-
-            
             match_common = self.create_match(parser, [
                                                (ofproto.OXM_OF_IN_PORT,in_port),
                                                (ofproto.OXM_OF_ETH_SRC,eth_src),
@@ -272,13 +254,13 @@ class sfc_app (app_manager.RyuApp):
                                                (ofproto.OXM_OF_IPV6_SRC,ipv6_src),
                                                (ofproto.OXM_OF_IPV6_DST,ipv6_dst)
                                                ])
+            match_entry_point = copy(match_common)
             #### DELETE PREINSTALLED CATCHING FLOWS
             for dp in self.datapaths.values():
-
-                match = copy.copy(match_common)
+                match = copy(match_common)
                 self.del_flow(datapath=dp,match=match)
             
-            # Iterrgoate DB on VNFS
+            ### Iterrogate DB on VNFS
             cur.execute('''select vnf_id from service where service_id = ? and  prev_vnf_id is NULL  ''',(service_id,))
             vnf_id = cur.fetchone()[0]
             ### added iftype bitwise support: 1(01)-out, 2(10)-in, 3(11)-inout
@@ -357,9 +339,6 @@ class sfc_app (app_manager.RyuApp):
         pkt_udp = pkt.get_protocol(udp.udp)
         if pkt_udp:
             if pkt_udp.dst_port == 30012:
-                ######
-                #Deebug
-                ######
                 print ("Packet_IN 30012 has arrived")
                 reg_string=pkt.protocols[-1]
                 reg_info = json.loads(reg_string)
@@ -441,6 +420,7 @@ class sfc_app (app_manager.RyuApp):
 
 ###########################################
     def ipv4_to_int(self, string):
+        """Converts doted ipv4 to integer"""
         ip = string.split('.')
         assert len(ip) == 4
         i = 0
