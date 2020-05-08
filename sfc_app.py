@@ -420,7 +420,7 @@ class sfc_app (app_manager.RyuApp):
 
 ###########################################
     def ipv4_to_int(self, string):
-        """Converts doted ipv4 to integer"""
+        """Converts dotted decimal ipv4 to integer"""
         ip = string.split('.')
         assert len(ip) == 4
         i = 0
