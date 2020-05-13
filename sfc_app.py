@@ -1,7 +1,6 @@
         
 import sqlite3
 import json
-from copy import copy
 from ryu.app.wsgi import ControllerBase, WSGIApplication, route
 from webob import Response
 from ryu.base import app_manager
@@ -16,7 +15,6 @@ from ryu.lib.packet import arp
 from ryu.lib.packet import udp
 from ryu.lib.packet import ipv4
 
-#sfc_instance_name = 'sfc_api_app'
 
 conn = sqlite3.connect('nfv.sqlite')
 cur = conn.cursor()
@@ -29,46 +27,30 @@ class SFCController(ControllerBase):
 ###### JUST FOR FUN
 #    @route('hello', '/{greeting}/{name}', methods=['GET'])
 #    def hello(self, req, **kwargs):
-#        print kwargs
+#        print (kwargs)
 #        greeting = kwargs['greeting']
 #        name = kwargs['name']
 #        message = greeting +' '+ name
 #        privet = {'message': message}
 #        body = json.dumps(privet)
-        
 #        return Response(content_type='application/json', body=body)
 
     @route('add-flow', '/add_flow/{flow_id}', methods=['GET'])
     def api_add_flow(self,req, **kwargs):
         sfc_app = self.sfc_api_app
-        
         cur.execute('''select * from flows where id = ?''',(kwargs['flow_id'],))
         flow_spec = cur.fetchone()
+        flow_dict={}
         if not flow_spec: return Response(status = 404)
         while flow_spec:
-            (flow_id,name,in_port,eth_dst,eth_src,eth_type,ip_proto,ipv4_src,ipv4_dst,tcp_src,tcp_dst,udp_src,udp_dst,ipv6_src,ipv6_dst,service_id)=flow_spec
-            if not eth_type: eth_type = 0x0800  
+            (flow_id,name,flow_dict['in_port'],flow_dict['eth_dst'],flow_dict['eth_src'],flow_dict['eth_type'],flow_dict['ip_proto'],flow_dict['ipv4_src'],flow_dict['ipv4_dst'],flow_dict['tcp_src'],flow_dict['tcp_dst'],flow_dict['udp_src'],flow_dict['udp_dst'],flow_dict['ipv6_src'],flow_dict['ipv6_dst'],service_id)=flow_spec
+            if not flow_dict['eth_type']: flow_dict['eth_type'] = 0x0800 
             actions = []
             for dp in sfc_app.datapaths.values():
-                match_add = sfc_app.create_match(dp.ofproto_parser, [
-                                               (dp.ofproto.OXM_OF_IN_PORT,in_port),
-                                               (dp.ofproto.OXM_OF_ETH_SRC,eth_src),
-                                               (dp.ofproto.OXM_OF_ETH_DST,eth_dst),
-                                               (dp.ofproto.OXM_OF_ETH_TYPE,eth_type),
-                                               (dp.ofproto.OXM_OF_IPV4_SRC,sfc_app.ipv4_to_int(ipv4_src)),
-                                               (dp.ofproto.OXM_OF_IPV4_DST,sfc_app.ipv4_to_int(ipv4_dst)),
-                                               (dp.ofproto.OXM_OF_IP_PROTO,ip_proto),
-                                               (dp.ofproto.OXM_OF_TCP_SRC,tcp_src),
-                                               (dp.ofproto.OXM_OF_TCP_DST,tcp_dst),
-                                               (dp.ofproto.OXM_OF_UDP_SRC,udp_src),
-                                               (dp.ofproto.OXM_OF_UDP_DST,udp_dst),
-                                               (dp.ofproto.OXM_OF_IPV6_SRC,ipv6_src),
-                                               (dp.ofproto.OXM_OF_IPV6_DST,ipv6_dst)
-                                               ])
+                match_add = sfc_app.create_match(dp.ofproto_parser,flow_dict)
+                sfc_app.add_flow(dp, 1, match_add, actions, metadata=flow_id, goto_id=2)
             
-                sfc_app.add_flow(dp, 0, match_add, actions, metadata=flow_id, goto_id=2)
-            
-            flow_spec = cur.fetchone()
+            flow_spec = cur.fetchone
             return Response(status = 200)
 
     @route('delete-flow', '/delete_flow/{flow_id}', methods=['GET'])
@@ -77,28 +59,13 @@ class SFCController(ControllerBase):
 
         cur.execute('''select * from flows where id = ?''',(kwargs['flow_id'],))
         flow_spec = cur.fetchone()
+        flow_dict={}
         if not flow_spec: return Response(status = 404)
-        (flow_id,name,in_port,eth_dst,eth_src,eth_type,ip_proto,ipv4_src,ipv4_dst,tcp_src,tcp_dst,udp_src,udp_dst,ipv6_src,ipv6_dst,service_id)=flow_spec
-        if not eth_type: eth_type = 0x0800  
+        (flow_id,name,flow_dict['in_port'],flow_dict['eth_dst'],flow_dict['eth_src'],flow_dict['eth_type'],flow_dict['ip_proto'],flow_dict['ipv4_src'],flow_dict['ipv4_dst'],flow_dict['tcp_src'],flow_dict['tcp_dst'],flow_dict['udp_src'],flow_dict['udp_dst'],flow_dict['ipv6_src'],flow_dict['ipv6_dst'],service_id)=flow_spec
+        if not flow_dict['eth_type']: flow_dict['eth_type'] = 0x0800 
+ 
         for dp in sfc_app.datapaths.values():
-            match_del = sfc_app.create_match(dp.ofproto_parser, [
-#                                               (dp.ofproto.OXM_OF_METADATA,int(kwargs['flow_id']))
-                                               (dp.ofproto.OXM_OF_IN_PORT,in_port),
-                                               (dp.ofproto.OXM_OF_ETH_SRC,eth_src),
-                                               (dp.ofproto.OXM_OF_ETH_DST,eth_dst),
-                                               (dp.ofproto.OXM_OF_ETH_TYPE,eth_type),
-                                               (dp.ofproto.OXM_OF_IPV4_SRC,sfc_app.ipv4_to_int(ipv4_src)),
-                                               (dp.ofproto.OXM_OF_IPV4_DST,sfc_app.ipv4_to_int(ipv4_dst)),
-                                               (dp.ofproto.OXM_OF_IP_PROTO,ip_proto),
-                                               (dp.ofproto.OXM_OF_TCP_SRC,tcp_src),
-                                               (dp.ofproto.OXM_OF_TCP_DST,tcp_dst),
-                                               (dp.ofproto.OXM_OF_UDP_SRC,udp_src),
-                                               (dp.ofproto.OXM_OF_UDP_DST,udp_dst),
-                                               (dp.ofproto.OXM_OF_IPV6_SRC,ipv6_src),
-                                               (dp.ofproto.OXM_OF_IPV6_DST,ipv6_dst)
-                                               ])
-
-#            match = copy.copy(match_del)
+            match_del = sfc_app.create_match(dp.ofproto_parser,flow_dict)
             sfc_app.del_flow(datapath=dp,match=match_del)
         return Response(status = 200)  
 
@@ -170,25 +137,14 @@ class sfc_app (app_manager.RyuApp):
 ########### Add catching rules to a DP upon it is connected
         cur.execute('''select * from flows''')
         flow_spec = cur.fetchone()
+
+        flow_dict={}
         while flow_spec:
-            (flow_id,name,in_port,eth_dst,eth_src,eth_type,ip_proto,ipv4_src,ipv4_dst,tcp_src,tcp_dst,udp_src,udp_dst,ipv6_src,ipv6_dst,service_id)=flow_spec
-            if not eth_type: eth_type = 0x0800  
             actions = []  
-            match = self.create_match(parser, [
-                                               (ofproto.OXM_OF_IN_PORT,in_port),
-                                               (ofproto.OXM_OF_ETH_SRC,eth_src),
-                                               (ofproto.OXM_OF_ETH_DST,eth_dst),
-                                               (ofproto.OXM_OF_ETH_TYPE,eth_type),
-                                               (ofproto.OXM_OF_IPV4_SRC,self.ipv4_to_int(ipv4_src)),
-                                               (ofproto.OXM_OF_IPV4_DST,self.ipv4_to_int(ipv4_dst)),
-                                               (ofproto.OXM_OF_IP_PROTO,ip_proto),
-                                               (ofproto.OXM_OF_TCP_SRC,tcp_src),
-                                               (ofproto.OXM_OF_TCP_DST,tcp_dst),
-                                               (ofproto.OXM_OF_UDP_SRC,udp_src),
-                                               (ofproto.OXM_OF_UDP_DST,udp_dst),
-                                               (ofproto.OXM_OF_IPV6_SRC,ipv6_src),
-                                               (ofproto.OXM_OF_IPV6_DST,ipv6_dst)
-                                               ])
+            (flow_id,name,flow_dict['in_port'],flow_dict['eth_dst'],flow_dict['eth_src'],flow_dict['eth_type'],flow_dict['ip_proto'],flow_dict['ipv4_src'],flow_dict['ipv4_dst'],flow_dict['tcp_src'],flow_dict['tcp_dst'],flow_dict['udp_src'],flow_dict['udp_dst'],flow_dict['ipv6_src'],flow_dict['ipv6_dst'],service_id)=flow_spec
+            if not flow_dict['eth_type']: flow_dict['eth_type'] = 0x0800 
+
+            match = self.create_match(parser,flow_dict)                            
             self.add_flow(datapath, 0, match, actions, metadata=flow_id, goto_id=2)
             
             flow_spec = cur.fetchone()
@@ -236,72 +192,45 @@ class sfc_app (app_manager.RyuApp):
 
             cur.execute('''select * from flows where id = ? ''',(flow_match,))
             flow_spec = cur.fetchone()
-            (flow_id,name,in_port,eth_dst,eth_src,eth_type,ip_proto,ipv4_src,ipv4_dst,tcp_src,tcp_dst,udp_src,udp_dst,ipv6_src,ipv6_dst,service_id)=flow_spec
+            flow_dict={}
+            (flow_id,name,in_port,eth_dst,eth_src,eth_type,ip_proto,ipv4_src,ipv4_dst,tcp_src,tcp_dst,udp_src,udp_dst,ipv6_src,ipv6_dst,service_id)=flow_spec 
             if not eth_type: eth_type = 0x0800  
             actions_entry_point = []  
-            match_common = self.create_match(parser, [
-                                               (ofproto.OXM_OF_IN_PORT,in_port),
-                                               (ofproto.OXM_OF_ETH_SRC,eth_src),
-                                               (ofproto.OXM_OF_ETH_DST,eth_dst),
-                                               (ofproto.OXM_OF_ETH_TYPE,eth_type),
-                                               (ofproto.OXM_OF_IPV4_SRC,self.ipv4_to_int(ipv4_src)),
-                                               (ofproto.OXM_OF_IPV4_DST,self.ipv4_to_int(ipv4_dst)),
-                                               (ofproto.OXM_OF_IP_PROTO,ip_proto),
-                                               (ofproto.OXM_OF_TCP_SRC,tcp_src),
-                                               (ofproto.OXM_OF_TCP_DST,tcp_dst),
-                                               (ofproto.OXM_OF_UDP_SRC,udp_src),
-                                               (ofproto.OXM_OF_UDP_DST,udp_dst),
-                                               (ofproto.OXM_OF_IPV6_SRC,ipv6_src),
-                                               (ofproto.OXM_OF_IPV6_DST,ipv6_dst)
-                                               ])
-            match_entry_point = copy(match_common)
+            (flow_id,name,flow_dict['in_port'],flow_dict['eth_dst'],flow_dict['eth_src'],flow_dict['eth_type'],flow_dict['ip_proto'],flow_dict['ipv4_src'],flow_dict['ipv4_dst'],flow_dict['tcp_src'],flow_dict['tcp_dst'],flow_dict['udp_src'],flow_dict['udp_dst'],flow_dict['ipv6_src'],flow_dict['ipv6_dst'],service_id)=flow_spec
+            if not flow_dict['eth_type']: flow_dict['eth_type'] = 0x0800 
+
+            match_common = self.create_match(parser,flow_dict)                            
             #### DELETE PREINSTALLED CATCHING FLOWS
             for dp in self.datapaths.values():
-                match = copy(match_common)
-                self.del_flow(datapath=dp,match=match)
+                self.del_flow(datapath=dp,match=match_common)
             
             ### Iterrogate DB on VNFS
             cur.execute('''select vnf_id from service where service_id = ? and  prev_vnf_id is NULL  ''',(service_id,))
             vnf_id = cur.fetchone()[0]
             ### added iftype bitwise support: 1(01)-out, 2(10)-in, 3(11)-inout
+            ### & 1 - first bit; & 2 - second bit
+            ### Ex. bitwise iftype selection 'select * from vnf where  iftype & 2 != 0'
+            ###                               'select dpid, in_port, locator_addr from vnf where id=X and iftype & 1 != 0'
             cur.execute(''' select locator_addr from vnf where id=? and iftype & 2 != 0''',(vnf_id,))
-            # Ex. bitwise iftype selection 'select * from vnf where  iftype & 2 != 0'
-            # & 1 - first bit; & 2 - second bit
-            #select dpid, in_port, locator_addr from vnf where id=7 and iftype & 2 != 0
             locator_addr = cur.fetchone()[0]
 
             cur.execute(''' select dpid, in_port from vnf where id=? and iftype & 1 != 0''',(vnf_id,))
 
-            dpid, in_port = cur.fetchone()
+            dpid, flow_dict['in_port'] = cur.fetchone()
 
             actions_entry_point.append(parser.OFPActionSetField(eth_dst=locator_addr))
-            self.add_flow(dp_entry_point, 8, match_entry_point, actions_entry_point, goto_id=1)
+            self.add_flow(dp_entry_point, 8, match_common, actions_entry_point, goto_id=1)
             while True:
                 datapath = self.datapaths[dpid]
                 actions = []
-                match = self.create_match(parser, [
-                                               (ofproto.OXM_OF_IN_PORT,in_port),
-                                               (ofproto.OXM_OF_ETH_SRC,eth_src),
-                                               (ofproto.OXM_OF_ETH_DST,eth_dst),
-                                               (ofproto.OXM_OF_ETH_TYPE,eth_type),
-                                               (ofproto.OXM_OF_IPV4_SRC,self.ipv4_to_int(ipv4_src)),
-                                               (ofproto.OXM_OF_IPV4_DST,self.ipv4_to_int(ipv4_dst)),
-                                               (ofproto.OXM_OF_IP_PROTO,ip_proto),
-                                               (ofproto.OXM_OF_TCP_SRC,tcp_src),
-                                               (ofproto.OXM_OF_TCP_DST,tcp_dst),
-                                               (ofproto.OXM_OF_UDP_SRC,udp_src),
-                                               (ofproto.OXM_OF_UDP_DST,udp_dst),
-                                               (ofproto.OXM_OF_IPV6_SRC,ipv6_src),
-                                               (ofproto.OXM_OF_IPV6_DST,ipv6_dst)
-                                               ])
+                match = self.create_match(parser,flow_dict)                            
                 cur.execute('''select next_vnf_id from service where service_id = ? and vnf_id = ?  ''',(service_id,vnf_id))
                 next_vnf_id = cur.fetchone()[0]
                 if next_vnf_id:
-                    ### added iftype support
                     cur.execute(''' select locator_addr from vnf where id=? and iftype & 2 != 0''',(next_vnf_id,))
                     locator_addr = cur.fetchone()[0]
                     cur.execute(''' select dpid, in_port from vnf where id=? and iftype & 1 != 0''',(next_vnf_id,))
-                    dpid, in_port = cur.fetchone()
+                    dpid, flow_dict['in_port'] = cur.fetchone()
 
                     actions.append(parser.OFPActionSetField(eth_dst=locator_addr))
                     self.add_flow(datapath, 8, match,  actions,goto_id=1)
@@ -310,14 +239,11 @@ class sfc_app (app_manager.RyuApp):
                     actions = [] 
                     self.add_flow(datapath, 8, match, actions,goto_id=1)
                     break
-                ### added iftype support
-               # cur.execute(''' select dpid, in_port, locator_addr from vnf where id=? and iftype & 1 != 0''',(vnf_id,))
-               # dpid, in_port, locator_addr = cur.fetchone()
 
                 cur.execute(''' select locator_addr from vnf where id=? and iftype & 2 != 0''',(next_vnf_id,))
                 locator_addr = cur.fetchone()[0]
                 cur.execute(''' select dpid, in_port from vnf where id=? and iftype & 1 != 0''',(next_vnf_id,))
-                dpid, in_port = cur.fetchone()
+                dpid, flow_dict['in_port'] = cur.fetchone()
 
         except KeyError:
             flow_match = None
@@ -328,18 +254,14 @@ class sfc_app (app_manager.RyuApp):
 
 ####### VNF self registrtation
 
-
         in_port = msg.match['in_port']
         pkt = packet.Packet(msg.data)
         pkt_arp = pkt.get_protocol(arp.arp) 
         pkt_eth = pkt.get_protocol(ethernet.ethernet)
         pkt_ip = pkt.get_protocol(ipv4.ipv4)
- 
-
         pkt_udp = pkt.get_protocol(udp.udp)
         if pkt_udp:
             if pkt_udp.dst_port == 30012:
-                print ("Packet_IN 30012 has arrived")
                 reg_string=pkt.protocols[-1]
                 reg_info = json.loads(reg_string)
                 name=reg_info['register']['name']
@@ -370,7 +292,6 @@ class sfc_app (app_manager.RyuApp):
                 
 ############# Function definitions #############
 
-
     def add_flow(self, datapath, priority, match, actions,
             buffer_id=None, table_id=0,metadata=None,goto_id=None):
         ofproto = datapath.ofproto
@@ -379,7 +300,7 @@ class sfc_app (app_manager.RyuApp):
 
         if goto_id:
             #inst = [parser.OFPInstructionActions(ofproto.OFPIT_WRITE_ACTIONS, actions)]
-            inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)] # works, BUT...
+            inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)] 
 
             if metadata:
                 inst.append(parser.OFPInstructionWriteMetadata(metadata,0xffffffff))
@@ -408,25 +329,14 @@ class sfc_app (app_manager.RyuApp):
                     out_group=ofproto.OFPG_ANY,
                     match=match)
         datapath.send_msg(mod)
-
 ############################################
+
     def create_match(self, parser, fields):
-        """Create OFP match struct from the list of fields."""
-        match = parser.OFPMatch()
-        for a in fields:
-            if  a[1]:
-                match.append_field(*a)
+        """Create OFP match struct from the list of fields. New API."""
+        flow_dict={}
+        for k,v in fields.items():
+            if  v is not None:
+                flow_dict[k]=v
+        match = parser.OFPMatch(**flow_dict)
         return match
-
-###########################################
-    def ipv4_to_int(self, string):
-        """Converts dotted decimal ipv4 to integer"""
-        ip = string.split('.')
-        assert len(ip) == 4
-        i = 0
-        for b in ip:
-            b = int(b)
-            i = (i << 8) | b
-        return i
-
 ###########################################
