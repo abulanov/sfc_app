@@ -97,24 +97,25 @@ Script example.py does all the magic of running mininet, interconnecting hosts a
    * 1st terminal: ```ryu-manager --verbose ./sfc_app.py```
 3. Start test topology in the 2nd terminal:
    * 2nd terminal: ```sudo ./example.py```
-4. Clear flow 3 (the application preinstalls one when get started):
-   * 3rd terminal: ``` curl -v http://127.0.0.1:8080/delete_flow/3```
-5. Check OpenFlow rules before SFC applied:
-   * 2nd terminal: ```mininet> h1 tracepath h5```
-   * 4th terminal: ```sudo ovs-ofctl -O OpenFlow13 dump-flows s3 | grep 10.0.0.5```
-   * One hop can be seen, no rules are insatlled
+4. Clear flows 2 and 3 (the application preinstalls ones when get started):
+   * 3rd terminal: ```curl -v http://127.0.0.1:8080/delete_flow/2```
+   * 3rd terminal: ```curl -v http://127.0.0.1:8080/delete_flow/3```
+5. Check default OpenFlow rules before SFC applied:
+   * 2nd terminal: ```mininet> h1 traceroute -I h5```
+   * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
+   * One hop can be seen, default rules are insatlled
 6. Apply Service Function Chain and check catching rules being installed on OF switches:
    * 3rd terminal: ```curl -v http://127.0.0.1:8080/add_flow/3```
-   * 4th terminal: ```sudo ovs-ofctl -O OpenFlow13 dump-flows s3 | grep 10.0.0.5```
+   * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
    * After flow application a catching rule is seen on OF switch.
 7. Start traffic running, check steering rules:
-   * 2nd terminal: ```mininet> h1 tracepath h5```
-   * 4th terminal: ```sudo ovs-ofctl -O OpenFlow13 dump-flows s3 | grep 10.0.0.5```
+   * 2nd terminal: ```mininet> h1 traceroute -I h5```
+   * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done5```
    * Now traffic passes several hops, a catching rule has been replaced with a steering rule.
 8. Delete flows
    * 3rd terminal: ```curl -v http://127.0.0.1:8080/delete_flow/3```
-   * 2nd terminal: ```mininet> h1 tracepath h5```
-   * 4th terminal: ``` sudo ovs-ofctl -O OpenFlow13 dump-flows s3 | grep 10.0.0.5```
+   * 2nd terminal: ```mininet> h1 traceroute -I h5```
+   * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
    * Data flow passes one hop again, no related rules seen on OF switch
    
 
