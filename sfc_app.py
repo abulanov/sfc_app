@@ -199,10 +199,10 @@ class sfc_app (app_manager.RyuApp):
             (flow_id,name,flow_dict['in_port'],flow_dict['eth_dst'],flow_dict['eth_src'],flow_dict['eth_type'],flow_dict['ip_proto'],flow_dict['ipv4_src'],flow_dict['ipv4_dst'],flow_dict['tcp_src'],flow_dict['tcp_dst'],flow_dict['udp_src'],flow_dict['udp_dst'],flow_dict['ipv6_src'],flow_dict['ipv6_dst'],service_id)=flow_spec
             if not flow_dict['eth_type']: flow_dict['eth_type'] = 0x0800 
 
-            match_common = self.create_match(parser,flow_dict)                            
+            match = self.create_match(parser,flow_dict)                            
             #### DELETE PREINSTALLED CATCHING FLOWS
             for dp in self.datapaths.values():
-                self.del_flow(datapath=dp,match=match_common)
+                self.del_flow(datapath=dp,match=match)
             
             ### Iterrogate DB on VNFS
             cur.execute('''select vnf_id from service where service_id = ? and  prev_vnf_id is NULL  ''',(service_id,))
@@ -219,7 +219,7 @@ class sfc_app (app_manager.RyuApp):
             dpid, flow_dict['in_port'] = cur.fetchone()
 
             actions_entry_point.append(parser.OFPActionSetField(eth_dst=locator_addr))
-            self.add_flow(dp_entry_point, 8, match_common, actions_entry_point, goto_id=1)
+            self.add_flow(dp_entry_point, 8, match, actions_entry_point, goto_id=1)
             while True:
                 datapath = self.datapaths[dpid]
                 actions = []
