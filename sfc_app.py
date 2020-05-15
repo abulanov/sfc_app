@@ -193,8 +193,8 @@ class sfc_app (app_manager.RyuApp):
             cur.execute('''select * from flows where id = ? ''',(flow_match,))
             flow_spec = cur.fetchone()
             flow_dict={}
-            (flow_id,name,in_port,eth_dst,eth_src,eth_type,ip_proto,ipv4_src,ipv4_dst,tcp_src,tcp_dst,udp_src,udp_dst,ipv6_src,ipv6_dst,service_id)=flow_spec 
-            if not eth_type: eth_type = 0x0800  
+#            (flow_id,name,in_port,eth_dst,eth_src,eth_type,ip_proto,ipv4_src,ipv4_dst,tcp_src,tcp_dst,udp_src,udp_dst,ipv6_src,ipv6_dst,service_id)=flow_spec 
+#            if not eth_type: eth_type = 0x0800  
             actions_entry_point = []  
             (flow_id,name,flow_dict['in_port'],flow_dict['eth_dst'],flow_dict['eth_src'],flow_dict['eth_type'],flow_dict['ip_proto'],flow_dict['ipv4_src'],flow_dict['ipv4_dst'],flow_dict['tcp_src'],flow_dict['tcp_dst'],flow_dict['udp_src'],flow_dict['udp_dst'],flow_dict['ipv6_src'],flow_dict['ipv6_dst'],service_id)=flow_spec
             if not flow_dict['eth_type']: flow_dict['eth_type'] = 0x0800 
