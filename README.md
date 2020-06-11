@@ -51,8 +51,8 @@ The process goes like this:
 
 The application can be improved by adding support for the following functionalities:
 
-1. Interface type support. Currently, all the interfaces are treated as inout type. Refining the requests to the Service Catalog Data Base will allow implementing multi-homed service function with defined flow direction (ex. Firewall with inside and outside interfaces). **[DONE]**
-2. Symmetric flow support can be a convenient feature to add reverse forwarding graph through symmetric service functions automagically. Symmetric or bidirectional functions are those which require traffic to be passed in both directions: uplink and downlink so that service could be provided (example: NAT). Not having that feature is not critical, but requires explicit definition of the reverse forwarding graph.
+1. Interface type support. Currently, all the interfaces are treated as inout type. Refining the requests to the Service Catalog Data Base will allow implementing multi-homed service function with defined flow direction (ex. Firewall with inside and outside interfaces).  **[DONE]**
+2. Symmetric flow support can be a convenient feature to add reverse forwarding graph through symmetric service functions automagically. Symmetric or bidirectional functions are those which require traffic to be passed in both directions: uplink and downlink so that service could be provided (example: NAT). Not having that feature is not critical, but requires explicit definition of the reverse forwarding graph. **[DONE]**
 3. Group support is required when several instances of a service function are deployed. The absence of it can be worked around by using Load Balancers in front of actual Network Functions. 
 6. Etc.: A richer set of protocol fields,  wildcard logic, VNF statuses and other enhancements.
 
@@ -78,13 +78,15 @@ example.py script sets up the environment (see Demonstration Instructions). In t
 ![demonstration environment](https://cloud.githubusercontent.com/assets/19608626/20305085/c170bc8e-ab44-11e6-84d9-d6a4e8562093.jpg)
 
 The traffic comes from h1 to h5 and passes through h2 and h3 according to a service description when flow rules are imposed on the network.
-To run the demonstration smoothly, make sure that IP forwarding is enabled on OS (**sudo sysctl net.ipv4.ip_forward=1**) and following lines added to /etc/hosts:
+To run the demonstration smoothly, make sure that IP forwarding is enabled on OS (**sudo sysctl net.ipv4.ip_forward=1**), `traceroute` is intalled and following lines added to /etc/hosts:
 ```
 10.0.0.1 h1
-10.0.0.2 h2
-10.0.0.3 h3
+10.0.0.2 h2-in
+10.0.0.3 h3-in
 10.0.0.4 h4
 10.0.0.5 h5
+10.0.0.12 h2-out
+10.0.0.13 h3-out
 ```
 
 ### Demonstration Instructions
@@ -97,24 +99,38 @@ Script example.py does all the magic of running mininet, interconnecting hosts a
    * 1st terminal: ```ryu-manager --verbose ./sfc_app.py```
 3. Start test topology in the 2nd terminal:
    * 2nd terminal: ```sudo ./example.py```
-4. Clear flows 2 and 3 (the application preinstalls ones when get started):
-   * 3rd terminal: ```curl -v http://127.0.0.1:8080/delete_flow/2```
-   * 3rd terminal: ```curl -v http://127.0.0.1:8080/delete_flow/3```
-5. Check default OpenFlow rules before SFC applied:
+4. Check default OpenFlow rules before SFC applied:
    * 2nd terminal: ```mininet> h1 traceroute -I h5```
    * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
    * One hop can be seen, default rules are insatlled
-6. Apply Service Function Chain and check catching rules being installed on OF switches:
+5. Apply Service Function Chain and check catching rules being installed on OF switches:
    * 3rd terminal: ```curl -v http://127.0.0.1:8080/add_flow/3```
    * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
-   * After flow application a catching rule is seen on OF switch.
-7. Start traffic running, check steering rules:
+   * After flow application  catching rules for both directions are seen on OF switch. Flow 3 has a bidirectional VNF in it. 
+6. Start traffic running, check steering rules:
    * 2nd terminal: ```mininet> h1 traceroute -I h5```
    * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done5```
    * Now traffic passes several hops, a catching rule has been replaced with a steering rule.
+7. Check traffic running in reverse direction, check steering rules:
+   * 2nd terminal: ```mininet> h5 traceroute -I h1```
+   * Reverse traffic flow passes several hops as one of the VNFs is bidirectional. 
 8. Delete flows
    * 3rd terminal: ```curl -v http://127.0.0.1:8080/delete_flow/3```
    * 2nd terminal: ```mininet> h1 traceroute -I h5```
+   * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
+   * Data flow passes one hop again, no related rules seen on OF switch   
+9. Apply Service Function Chain and check catching rules being installed on OF switches:
+   * 3rd terminal: ```curl -v http://127.0.0.1:8080/add_flow/4```
+   * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
+   * After flow application a catching rule is seen on OF switch. Flow 4 doesn't have a bidirectional VNF in it. 
+10. Start traffic running, check steering rules:
+   * 2nd terminal: ```mininet> h1 traceroute -I h4```
+   * 2nd terminal: ```mininet> h4 traceroute -I h1```
+   * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done5```
+   * Now traffic passes several hops from h1 to h4, a catching rule has been replaced with a steering rule. Traffic from h4 to h1 still passes one hop as there are no bidirectional VNFs on the way.   
+11. Delete flows
+   * 3rd terminal: ```curl -v http://127.0.0.1:8080/delete_flow/4```
+   * 2nd terminal: ```mininet> h1 traceroute -I h4```
    * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
    * Data flow passes one hop again, no related rules seen on OF switch
    
