@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from optparse import OptionParser
 import socket
@@ -34,32 +34,26 @@ def main():
 
     # Parsing and processing
     options, args = op.parse_args()
-
     register_str=None
 
-    if options.addr is None and options.port is None:
-        print 'No IP address or Port information is given. Exiting.'
+    if options.addr is None or options.port is None:
+        print('No IP address or Port information is given. Exiting.')
         return
     elif options.event_name is None:
-        print 'No event name provided. Exiting.'
+        print('No event name provided. Exiting.')
         return
-    #elif options.event_value is None:
-    #    print 'No event value provided. Exiting.'
-    #    return
-
     # Open file if specified
     elif options.file and options.register:
-        print 'Can only specify one of (file,register)'
+        print('Can only specify one of (file,register)')
         return
 
     elif options.file:
         try:
             fd = open(options.file, 'r')
         except IOError as err:
-            print 'Error opening file: ', err
-            print 'Aborting.\n'
+            logging.debug('Error opening file: {}'.format(err))
+            logging.debug('Aborting.\n')
             sys.exit(1)
-
         content = fd.read()
         register_str = content
 
@@ -79,37 +73,26 @@ def main():
 
         parse_register_str(register_dict, register_str)
 
-        # Construct JSON message
         json_message = dict(name=options.event_name,
                             register=register_dict)
     else:
-        # Construct JSON message
         json_message = dict(name=options.event_name)
-
     # Create socket
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     except socket.error:
-        print 'Failed to create socket'
-        sys.exit()
-    # Connect to server
-    #s.connect((options.addr, int(options.port)))
-    #bufsize = len(json_message)
+        logging.debug ('Failed to create socket')
+        sys.exit(1)
+    s.sendto(json.dumps(json_message).encode(), (options.addr, int(options.port)) )
 
-    # Send data
-    totalsent = 0
-    #s.sendall(json.dumps(json_message))
-    s.sendto(json.dumps(json_message), (options.addr, int(options.port)) )
-    # Receive return value
-    #recvdata = s.recv(1024)
-    #------recvdata, addr= s.recvfrom(1024)
-    #----print 'return: ' + recvdata
-    #recvdata,addr = s.recvfrom(1024)
-    #print 'return: ' + recvdata
-    #s.close()
-
+def parse(string):
+    try:
+        parsed = json.dumps(string)
+    except:    
+        logging.debug("Parsing went wrong")    
+        return None
+    return parsed
 def parse_register_str(register_dict, register_str):
-    print "\nregister_Str = " + register_str
     m = re.search("name=[\'\"]?([\w._-]+)",register_str)
     if m:
         register_dict['name'] = m.group(1)
@@ -138,10 +121,7 @@ def parse_register_str(register_dict, register_str):
     m = re.search("bidirectional=[\'\"]?(\w+)",register_str)
     if m:
         register_dict['bidirectional'] = m.group(1)
-                #--------------------------------------------------------------------
-    print "\nData Payload = " + str(register_dict) + '\n'
 
-# main ######
 if __name__ == '__main__':
     main()
 
