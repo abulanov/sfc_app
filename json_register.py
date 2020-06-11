@@ -85,13 +85,6 @@ def main():
         sys.exit(1)
     s.sendto(json.dumps(json_message).encode(), (options.addr, int(options.port)) )
 
-def parse(string):
-    try:
-        parsed = json.dumps(string)
-    except:    
-        logging.debug("Parsing went wrong")    
-        return None
-    return parsed
 def parse_register_str(register_dict, register_str):
     m = re.search("name=[\'\"]?([\w._-]+)",register_str)
     if m:
