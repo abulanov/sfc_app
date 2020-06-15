@@ -124,15 +124,15 @@ Script example.py does all the magic of running mininet, interconnecting hosts a
    * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
    * After flow application a catching rule is seen on OF switch. Flow 4 doesn't have a bidirectional VNF in it. 
 10. Start traffic running, check steering rules:
-   * 2nd terminal: ```mininet> h1 traceroute -I h4```
-   * 2nd terminal: ```mininet> h4 traceroute -I h1```
-   * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done5```
-   * Now traffic passes several hops from h1 to h4, a catching rule has been replaced with a steering rule. Traffic from h4 to h1 still passes one hop as there are no bidirectional VNFs on the way.   
+    * 2nd terminal: ```mininet> h1 traceroute -I h4```
+    * 2nd terminal: ```mininet> h4 traceroute -I h1```
+    * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done5```
+    * Now traffic passes several hops from h1 to h4, a catching rule has been replaced with a steering rule. Traffic from h4 to h1 still passes one hop as there are no bidirectional VNFs on the way.   
 11. Delete flows
-   * 3rd terminal: ```curl -v http://127.0.0.1:8080/delete_flow/4```
-   * 2nd terminal: ```mininet> h1 traceroute -I h4```
-   * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
-   * Data flow passes one hop again, no related rules seen on OF switch
+    * 3rd terminal: ```curl -v http://127.0.0.1:8080/delete_flow/4```
+    * 2nd terminal: ```mininet> h1 traceroute -I h4```
+    * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
+    * Data flow passes one hop again, no related rules seen on OF switch
    
 
 
