@@ -49,16 +49,11 @@ class sfc(AsymLList):
         (self.flow_id,self.name,self.flow_dict['in_port'],self.flow_dict['eth_dst'],self.flow_dict['eth_src'],self.flow_dict['eth_type'],self.flow_dict['ip_proto'],self.flow_dict['ipv4_src'],self.flow_dict['ipv4_dst'],self.flow_dict['tcp_src'],self.flow_dict['tcp_dst'],self.flow_dict['udp_src'],self.flow_dict['udp_dst'],self.flow_dict['ipv6_src'],self.flow_dict['ipv6_dst'],self.service_id)=self.flow_spec
         if not self.flow_dict['eth_type']:
             self.flow_dict['eth_type'] = 0x0800
-        
 
         self.flow_id = int(flow_id)
         self.reverse_flow_id = self.flow_id+3000
         self.flows[self.flow_id] = self.flow_dict
-        print("CONTENT of flows {}".format(self.flows[self.flow_id]))
         self.flows[self.reverse_flow_id] = sfc_app_cls.reverse_flow(self.flows[self.flow_id])
-
-        print(self.flows)
-        
         self.cur.execute('''select vnf_id from service where service_id = ? and  prev_vnf_id is NULL  ''',(self.service_id,))
         vnf_id = self.cur.fetchone()[0]    
         super().__init__(vnf_id,is_bidirect=True,nodeClass=nodeClass,cur=self.cur)   
@@ -94,9 +89,7 @@ class sfc(AsymLList):
                 match = sfc_app_cls.create_match(dp.ofproto_parser,self.flows[flow_id])
                 sfc_app_cls.add_flow(dp, 1, match, actions, metadata=flow_id, goto_id=2)
             if self.back is None:
-                print("{} - unidirectional".format(flow_id))
                 break
-            print("flow_id: {}".format(flow_id))
         return Response(status = 200)
 
     def delete_rule(self,sfc_app_cls,flow_match):
@@ -124,7 +117,7 @@ class sfc(AsymLList):
                 dp=sfc_app_cls.datapaths[vnf.dpid_out] 
                 match = sfc_app_cls.create_match(parser,flow_dict)
         else:
-            for vnf in self.backward(): #
+            for vnf in self.backward(): 
                 dpid_out=vnf.dpid_out
                 actions.append(parser.OFPActionSetField(eth_dst=vnf.locator_addr_out)) #
                 sfc_app_cls.add_flow(dp, 8, match, actions, goto_id=1)
@@ -151,7 +144,6 @@ class SFCController(ControllerBase):
         message = greeting +' '+ name
         privet = {'message': message}
         body = json.dumps(privet)
-        sfc_app_cls.test(name) 
         return Response(content_type='application/json', body=body.encode('utf-8'), status = 200)
 
     @route('add-flow', '/add_flow/{flow_id}', methods=['GET'])
@@ -180,17 +172,9 @@ class SFCController(ControllerBase):
 
         (flow_id,name,flow_dict['in_port'],flow_dict['eth_dst'],flow_dict['eth_src'],flow_dict['eth_type'],flow_dict['ip_proto'],flow_dict['ipv4_src'],flow_dict['ipv4_dst'],flow_dict['tcp_src'],flow_dict['tcp_dst'],flow_dict['udp_src'],flow_dict['udp_dst'],flow_dict['ipv6_src'],flow_dict['ipv6_dst'],service_id)=flow_spec
         if not flow_dict['eth_type']: flow_dict['eth_type'] = 0x0800 
-#        print("CONTENT of flow_dict {}".format(flow_dict))
-#        sfc_app_cls.test(flow_dict)
-#        print("TYPE OF SFC_APP: {}".format(sfc_app_cls))
-#        print("TYPE OF SFC_AP: {}".format(sfc_ap))
-#        print("ARE THEY THE SAME: {}".format(sfc_app_cls is sfc_ap))
         reverse_flow_dict = sfc_app_cls.reverse_flow(flow_dict) 
         for flow_dict in (flow_dict, reverse_flow_dict):
 
- #           for dp in sfc_app_cls.datapaths.values():
- #               match_del = sfc_app_cls.create_match(dp.ofproto_parser,flow_dict)
- #               sfc_app_cls.del_flow(datapath=dp,match=match_del)
             for dp in sfc_ap.datapaths.values():
                 match_del = sfc_ap.create_match(dp.ofproto_parser,flow_dict)
                 sfc_ap.del_flow(datapath=dp,match=match_del)
@@ -204,7 +188,6 @@ class SFCController(ControllerBase):
 
     @route('flows', '/flows/{flow_id}', methods=['GET'])
     def api_show_flow(self,req, **kwargs):
- #       sfc_app_cls = self.sfc_api_app
         flow_id=kwargs['flow_id']
         try:
             body=json.dumps({flow_id:str(flows[flow_id])})
@@ -215,7 +198,6 @@ class SFCController(ControllerBase):
 
     @route('flows_all', '/flows', methods=['GET'])
     def api_show_flows(self,req, **kwargs):
-#        sfc_app_cls = self.sfc_api_app
         logging.debug('FLOWS: {}'.format(str(flows)))
         body=json.dumps(str(flows))
         return Response(content_type='application/json', body=body.encode('utf-8'), status = 200)
@@ -296,12 +278,9 @@ class sfc_app_cls (app_manager.RyuApp):
 ################ Packet_IN handler ####################
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
-#        actions = []
         msg = ev.msg
         datapath = msg.datapath
         ofproto = datapath.ofproto 
-#        parser = datapath.ofproto_parser 
-
         if msg.reason == ofproto.OFPR_NO_MATCH:
             reason = 'NO MATCH'
         elif msg.reason == ofproto.OFPR_ACTION:
@@ -330,7 +309,6 @@ class sfc_app_cls (app_manager.RyuApp):
 
 ####### Installing steering rules 
             logging.debug('Installing steering rules - flow:%d match:%d ...', flow_id, flow_match)
-            #logging.debug('installing steering rule still doing nothong =)')
             flows[str(flow_id)].install_steering_rule(self,dp_entry,in_port_entry,flow_match)
             
         except KeyError:
@@ -421,8 +399,6 @@ class sfc_app_cls (app_manager.RyuApp):
         return match
 
     def reverse_flow(flow_dict):
-        #print("Arguments {}".format(args))
-
         '''Creates reverse flow dict '''
         reverse_flow_dict = { **flow_dict}
         reverse_flow_dict['eth_src']=flow_dict['eth_dst']
@@ -436,9 +412,4 @@ class sfc_app_cls (app_manager.RyuApp):
         reverse_flow_dict['ipv6_src']=flow_dict['ipv6_dst']
         reverse_flow_dict['ipv6_dst']=flow_dict['ipv6_src']
         return reverse_flow_dict
-
-
-    def test(*args):
-        logging.debug("<<<<<<<<<<<<->>>>>>>>>>>>>>")
-        print(args)
 
