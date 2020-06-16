@@ -55,7 +55,7 @@ class sfc(AsymLList):
         self.flows[self.flow_id] = self.flow_dict
         self.flows[self.reverse_flow_id] = sfc_app_cls.reverse_flow(self.flows[self.flow_id])
         self.cur.execute('''select vnf_id from service where service_id = ? and  prev_vnf_id is NULL  ''',(self.service_id,))
-        vnf_id = self.cur.fetchone()[0]    
+        vnf_id = self.cur.fetchone()[0]
         super().__init__(vnf_id,is_bidirect=True,nodeClass=nodeClass,cur=self.cur)   
         self.fill()
 
@@ -64,15 +64,11 @@ class sfc(AsymLList):
 
     def append(self):
         self.cur.execute('''select next_vnf_id from service where service_id = ? and vnf_id = ?  ''',(self.service_id,self.last.id))
-        try :
-            next_vnf_id = self.cur.fetchone()[0]
-            if next_vnf_id is None:
-                return None
-            logging.debug('Trying to append %s', next_vnf_id)
-            return super().append(next_vnf_id,cur=self.cur)
-            
-        except TypeError:
+        next_vnf_id = self.cur.fetchone()[0]
+        if next_vnf_id is None:
             return None
+        logging.debug('Trying to append %s', next_vnf_id)
+        return super().append(next_vnf_id,cur=self.cur)
             
     def fill(self):
         logging.debug('Filling...')
@@ -119,17 +115,13 @@ class sfc(AsymLList):
         else:
             for vnf in self.backward(): 
                 dpid_out=vnf.dpid_out
-                actions.append(parser.OFPActionSetField(eth_dst=vnf.locator_addr_out)) #
+                actions.append(parser.OFPActionSetField(eth_dst=vnf.locator_addr_out)) 
                 sfc_app_cls.add_flow(dp, 8, match, actions, goto_id=1)
                 actions = []
                 flow_dict['in_port']=vnf.port_out
                 dp=sfc_app_cls.datapaths[vnf.dpid_out] 
                 match = sfc_app_cls.create_match(parser,flow_dict)
 
-    def delete_flow():
-        # may better to code it as deconstructor
-        pass
- 
 #################################
 
 class SFCController(ControllerBase):
@@ -157,6 +149,10 @@ class SFCController(ControllerBase):
             message = {'Result': 'Flow {} is not defined'.format(flow_id)}
             body = json.dumps(message)
             return Response(content_type='application/json', body=body.encode('utf-8'), status = 404)
+        except TypeError:
+            message = {'Result': 'DB inconsistency'}
+            body = json.dumps(message)
+            return Response(content_type='application/json', body=body.encode('utf-8'), status = 500  )
         logging.debug('SFC: %s',str(flows[flow_id]))
         flows[flow_id].install_catching_rule(sfc_ap)
 
