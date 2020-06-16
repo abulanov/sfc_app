@@ -54,20 +54,20 @@ def topology():
     h3.cmd('sudo arp -i h3-eth0 -s 10.0.0.253 01:02:03:04:05:06')
     h3.cmd('sudo arp -i h3-eth1 -s 10.0.0.254 11:12:13:14:15:16')
 
+    h5.cmd('sudo arp -i h5-eth0 -s 10.0.0.253 01:02:03:04:05:06')
+
     c7.start()
     s1.start( [c7] )
     s2.start( [c7] )
     s3.start( [c7] )
     s4.start( [c7] )
     s5.start( [c7] )
-#    net.start()
-#    h2_out=h2.cmd("./json_register.py --reg='{name='forwarder1', vnf_id=555, type_id=1, group_id=1, iftype=1, bidirectional=False, geo_location='server1.rack2.row3.room4'}' -a 10.0.0.253 -p 30012 -n registration")
-#    h2.cmd("./json_register.py --reg='{name='forwarder1', vnf_id=555, type_id=1, group_id=1, iftype=1, bidirectional=False, geo_location='server1.rack2.row3.room4'}' -a 10.0.0.254 -p 30012 -n registration")
 
     h2.cmd('./json_register.py --file=forwarder1.txt -a 10.0.0.253 -p 30012 -n registration')
     h2.cmd('./json_register.py --file=forwarder1-2.txt -a 10.0.0.254 -p 30012 -n registration')
     h3.cmd('./json_register.py --file=forwarder2-1.txt -a 10.0.0.253 -p 30012 -n registration')
     h3.cmd('./json_register.py --file=forwarder2-2.txt -a 10.0.0.254 -p 30012 -n registration')
+    h5.cmd('./json_register.py --file=forwarder3.txt -a 10.0.0.253 -p 30012 -n registration')
     print("*** Running CLI")
     CLI( net )
  
