@@ -324,6 +324,7 @@ class sfc_app_cls (app_manager.RyuApp):
                 reg_info = json.loads(reg_string)
                 name=reg_info['register']['name']
                 vnf_id=reg_info['register']['vnf_id']
+                logging.debug('VNF ID from reg packet %s', vnf_id)
                 type_id=reg_info['register']['type_id']
                 group_id=reg_info['register']['group_id']
                 geo_location=reg_info['register']['geo_location']
