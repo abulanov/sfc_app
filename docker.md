@@ -1,4 +1,5 @@
 Instead of mininet, the demonstration can run on docker containers. 
+![Dockerized demo environment](https://github.com/abulanov/sfc_app/blob/master/src/docker-sfc-demonstration.jpg)
 1.	Build the image for the vnf container from Docker file in the current directory:
     * ```docker build -t abulanov/ovs:latest .```
 2.	Start sfc application on the host:
