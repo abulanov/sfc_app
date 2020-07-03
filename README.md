@@ -88,6 +88,7 @@ To run the demonstration smoothly, make sure that IP forwarding is enabled on OS
 10.0.0.12 h2-out
 10.0.0.13 h3-out
 ```
+The demonstration can be launched on the docker containers as well. See the instructions [here.](https://github.com/abulanov/sfc_app/blob/master/docker.md)
 
 ### Demonstration Instructions
 
@@ -126,7 +127,7 @@ Script example.py does all the magic of running mininet, interconnecting hosts a
 10. Start traffic running, check steering rules:
     * 2nd terminal: ```mininet> h1 traceroute -I h4```
     * 2nd terminal: ```mininet> h4 traceroute -I h1```
-    * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done5```
+    * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
     * Now traffic passes several hops from h1 to h4, a catching rule has been replaced with a steering rule. Traffic from h4 to h1 still passes one hop as there are no bidirectional VNFs on the way.   
 11. Delete flows
     * 3rd terminal: ```curl -v http://127.0.0.1:8080/delete_flow/4```
