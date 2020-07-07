@@ -24,7 +24,7 @@ Instead of mininet, the demonstration can run on docker containers.
     * Containers are seen in one hop away from each other in both directions. Default rules are installed.
 
 7.	Apply an SFC:
-    * ```curl -v http://127.0.0.1:8080/add_flow/6```
+    * ```curl -v http://127.0.0.1:8080/add_flow/5```
     * ```for i in $(docker ps --format {{.Names}}); do  echo $i; docker exec $i  ovs-ofctl -O OpenFlow13 dump-flows lan-br; done```
     * After the flow application catching rules for both directions are seen on the switches in the containers. Flow 5 is bound to a service with a bidirectional VNF in it.
 
