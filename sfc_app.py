@@ -54,7 +54,7 @@ class sfc(AsymLList):
         self.reverse_flow_id = self.flow_id+3000
         self.flows[self.flow_id] = self.flow_dict
         self.flows[self.reverse_flow_id] = sfc_app_cls.reverse_flow(self.flows[self.flow_id])
-        self.cur.execute('''select vnf_id from service where service_id = ? and  prev_vnf_id is NULL  ''',(self.service_id,))
+        self.cur.execute('''select vnf_id from service where service_id = ? except select next_vnf_id from service where service_id = ? ''',(self.service_id,self.service_id))
         vnf_id = self.cur.fetchone()[0]
         super().__init__(vnf_id,is_bidirect=True,nodeClass=nodeClass,cur=self.cur)   
         self.fill()
