@@ -16,6 +16,7 @@ from asymlist import Node, AsymLList
 conn = sqlite3.connect('nfv.sqlite')
 cur = conn.cursor()
 flows = {}
+DELTA = 3000
 ##################
 class vnf(Node):
     def __init__(self, vnf_id, is_bidirect=True, cur=None):
@@ -53,7 +54,7 @@ class sfc(AsymLList):
             self.flow_dict['eth_type'] = 0x0800
 
         self.flow_id = int(flow_id)
-        self.reverse_flow_id = self.flow_id+3000
+        self.reverse_flow_id = self.flow_id+DELTA
         self.flows[self.flow_id] = self.flow_dict
         self.flows[self.reverse_flow_id] = sfc_app_cls.reverse_flow(self.flows[self.flow_id])
         self.cur.execute('''select vnf_id from service where service_id = ? except select next_vnf_id from service where service_id = ? ''', (self.service_id, self.service_id))
@@ -105,7 +106,7 @@ class sfc(AsymLList):
         flow_dict = self.flows[flow_match]
         flow_dict['in_port'] = in_port_entry
         match = sfc_app_cls.create_match(parser, flow_dict)
-        if flow_match < 3000:
+        if flow_match < DELTA:
             for vnf in self.forward():
                 #dpid_out = vnf.dpid_out
                 actions.append(parser.OFPActionSetField(eth_dst=vnf.locator_addr_in)) 
@@ -297,8 +298,8 @@ class sfc_app_cls(app_manager.RyuApp):
                           msg.table_id, msg.cookie, msg.match)
         try:
             flow_match = msg.match['metadata']
-            if msg.match['metadata'] > 3000:
-                flow_id = flow_match - 3000
+            if msg.match['metadata'] > DELTA:
+                flow_id = flow_match - DELTA
             else:
                 flow_id = flow_match
             in_port_entry = msg.match['in_port']
