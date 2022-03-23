@@ -62,6 +62,10 @@ Initially, the environment was based on Ubuntu 14.04. Recently it has been tried
 The following software should be installed. Detailed installation instructions for each of the component can be found on the related web pages. 
 ##### Ryu controller
  [https://github.com/osrg/ryu](https://github.com/osrg/ryu) 
+ 
+ To avoid errors when running Ryu app, install older eventlet version:
+ 
+ ```pip install eventlet==0.30.2```
 ##### Mininet
  [http://mininet.org/download/](http://mininet.org/download/) 
 ##### SQLite Browser
@@ -110,7 +114,7 @@ Script example.py does all the magic of running mininet, interconnecting hosts a
    * After flow application  catching rules for both directions are seen on OF switch. Flow 3 has a bidirectional VNF in it. 
 6. Start traffic running, check steering rules:
    * 2nd terminal: ```mininet> h1 traceroute -I h5```
-   * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done5```
+   * 4th terminal: ```for i in {1..5}; do echo s$i; sudo ovs-ofctl -O OpenFlow13 dump-flows s$i  ; done```
    * Now traffic passes several hops, a catching rule has been replaced with a steering rule.
 7. Check traffic running in reverse direction, check steering rules:
    * 2nd terminal: ```mininet> h5 traceroute -I h1```
